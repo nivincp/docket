@@ -6,4 +6,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - ./storage:/app/storage
     command: yarn dev
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
