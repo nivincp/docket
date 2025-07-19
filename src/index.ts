@@ -1,22 +1,31 @@
-import 'dotenv/config';
+import { OpenAPIHono } from '@hono/zod-openapi'
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
-import { ask } from './routes'
-import { ingest } from './lib'
+import { askRoute, askHandler } from './routes'
+import { Scalar } from '@scalar/hono-api-reference'
 
-const app = new Hono()
+const app = new OpenAPIHono()
 
-// ingest();
-
-app.get('/', (c) => {
-  return c.json({ status: 'up' })
+app.doc('/spec', {
+  openapi: '3.0.1',
+  info: {
+    version: '1.0.0',
+    title: 'Support API',
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000',
+      description: 'Local server',
+    },
+  ],
 })
 
-app.route("/ask", ask);
+app.get('/api', Scalar({ url: '/spec' }))
+
+app.openapi(askRoute, askHandler)
 
 serve({
   fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
+  port: 3000,
 })
+
+console.log('Server is running on http://localhost:3000')
