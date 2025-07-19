@@ -2,10 +2,13 @@ FROM node:22.13.1
 
 WORKDIR /app
 
+# Copy package files first for caching
 COPY package.json yarn.lock tsconfig.json ./
-COPY src ./src
 
 RUN yarn install
+
+# Then copy source files
+COPY src ./src
 
 EXPOSE 3000
 
