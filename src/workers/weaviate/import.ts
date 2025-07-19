@@ -1,4 +1,6 @@
 import weaviate, { WeaviateClient } from 'weaviate-client'
+import fs from 'fs'
+import pdf from '@cyber2024/pdf-parse-fixed'
 
 const client: WeaviateClient = await weaviate.connectToLocal()
 
@@ -17,6 +19,21 @@ async function importQuestions() {
   console.log('Insertion response: ', result)
 }
 
-await importQuestions()
+async function getPdfText(filePath: string) {
+  const dataBuffer = fs.readFileSync(filePath)
+  const pdfData = await pdf(dataBuffer)
+  return pdfData.text
+}
+
+async function importPdfQuestions() {
+  const questions = client.collections.get('Question')
+  const pdfText = await getPdfText('src/data/ndg_webshop_delivery_policy_changes_faq.pdf')
+  const data = [{ text: pdfText }]
+  const result = await questions.data.insertMany(data)
+  console.log('PDF insertion response: ', result)
+}
+
+// await importQuestions()
+await importPdfQuestions()
 
 client.close()
