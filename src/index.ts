@@ -19,6 +19,10 @@ app.doc('/spec', {
   ],
 })
 
+app.get('/', (c) => {
+  return c.text('Welcome to the Support API! Visit /api for the OpenAPI spec.')
+})
+
 app.get('/api', Scalar({ url: '/spec' }))
 
 app.openapi(askRoute, askHandler)
