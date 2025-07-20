@@ -114,7 +114,7 @@ For MVP:
 - Optional but helpful:
   - Confidence scores
   - Short rationale (`e.g., found in doc X, section Y`)
-- 💡 Bonus:
+- Bonus:
   - Highlight matched text
   - Include relevant snippets
 
