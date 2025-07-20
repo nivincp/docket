@@ -13,6 +13,29 @@ This project is a prototype for a next-generation B2B support platform. It lever
 - **Data Loader** (`src/workers/b2b/load.ts`): Reads documents, generates embeddings, and populates Weaviate.
 - **Query Pipeline** (`src/lib/query.ts`): Embeds user queries, performs semantic search, constructs prompts, and calls LLM for answers.
 
+## Flow
+
+```mermaid
+graph TD
+  A[User] -->|Asks question| B[Hono API /ask]
+  B --> C[query.ts]
+  C --> D[Weaviate Vector DB]
+  D -->|Returns relevant chunks| E[Prompt Builder]
+  E --> F[Ollama: LLM via LlamaIndex]
+  F -->|Final Answer + Citations| G[Hono API /ask]
+  G --> A
+
+  subgraph Local Services
+    D
+    F
+  end
+
+  subgraph Data Pipeline
+    H[load.ts]
+    H --> D
+  end
+```
+
 ## Key Files & Their Roles
 
 ### 1. `src/index.ts`
