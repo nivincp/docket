@@ -19,7 +19,7 @@ async function main() {
   await client.close()
 }
 
-async function populateWeaviate(
+export async function populateWeaviate(
   client: WeaviateClient,
   overwriteExisting: boolean = false
 ): Promise<void> {
@@ -53,7 +53,7 @@ async function populateWeaviate(
   await handleDocs(client)
 }
 
-async function handleDocs(client: WeaviateClient, readOnly: boolean = false) {
+export async function handleDocs(client: WeaviateClient, readOnly: boolean = false) {
   const kbCollection = client.collections.get(config.collection)
 
   if (readOnly === false) {
@@ -78,4 +78,7 @@ async function handleDocs(client: WeaviateClient, readOnly: boolean = false) {
   console.log(`Size of the kb dataset: ${kbCount.totalCount}`)
 }
 
-void main()
+// Only run main if this file is executed directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  void main()
+}
