@@ -238,8 +238,3 @@ yarn test query.test.ts
 - Improve prompt engineering and result filtering.
 - Scale to larger datasets and multi-user scenarios.
 - Add streaming support for real-time answer generation and improved user experience.
-
-## References
-
-- See `README.md` for challenge context and clarifying questions.
-- All code is in `src/` except for dependencies and data files.
