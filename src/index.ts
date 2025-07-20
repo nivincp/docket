@@ -4,12 +4,13 @@ import { askRoute, askHandler } from './routes'
 import { Scalar } from '@scalar/hono-api-reference'
 
 const app = new OpenAPIHono()
+const title = 'Support API'
 
-app.doc('/spec', {
-  openapi: '3.0.1',
+app.doc31('/spec', {
+  openapi: '3.1.1',
   info: {
     version: '1.0.0',
-    title: 'Support API',
+    title,
   },
   servers: [
     {
@@ -20,10 +21,10 @@ app.doc('/spec', {
 })
 
 app.get('/', (c) => {
-  return c.text('Welcome to the Support API! Visit /api for the OpenAPI spec.')
+  return c.text('Welcome to the Support API! Visit /docs for the OpenAPI spec.')
 })
 
-app.get('/api', Scalar({ url: '/spec' }))
+app.get('/docs', Scalar({ theme: 'saturn', url: '/spec', pageTitle: title }))
 
 app.openapi(askRoute, askHandler)
 
