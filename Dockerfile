@@ -12,4 +12,5 @@ COPY src ./src
 
 EXPOSE 3000
 
-CMD ["yarn", "dev"]
+COPY entrypoint.sh /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
