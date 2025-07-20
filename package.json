@@ -2,11 +2,9 @@
   "name": "docket",
   "type": "module",
   "scripts": {
-    "b2b:load": "tsx src/workers/b2b-v2/load.ts",
-    "b2b:query": "tsx src/workers/b2b-v2/query.ts",
+    "b2b-v2:load": "tsx src/workers/b2b-v2/load.ts",
+    "b2b-v2:query": "tsx src/workers/b2b-v2/query.ts",
     "dev": "tsx watch src/index.ts",
-    "dev:indexBuilder": "tsx src/workers/indexBuilder.ts",
-    "dev:agentTool": "tsx watch src/workers/agentTool.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "format": "prettier --write .",
