@@ -3,11 +3,10 @@ import 'dotenv/config'
 import weaviate, { WeaviateClient, vectors, generative } from 'weaviate-client'
 import { SimpleDirectoryReader } from '@llamaindex/readers/directory'
 import { Settings } from 'llamaindex'
+import { config } from '@/lib'
 
 Settings.chunkSize = 2000
 Settings.chunkOverlap = 500
-
-const ollamaEndpoint = 'http://host.docker.internal:11434'
 
 async function main() {
   // Initialize Weaviate client
@@ -24,21 +23,21 @@ async function populateWeaviate(
 ): Promise<void> {
   if (overwriteExisting) {
     try {
-      await client.collections.delete('KnowledgeBase')
+      await client.collections.delete(config.collection)
     } catch (error) {}
   }
 
-  if (!(await client.collections.exists('KnowledgeBase'))) {
+  if (!(await client.collections.exists(config.collection))) {
     await client.collections.create({
-      name: 'KnowledgeBase',
-      description: 'A dataset for answering product and policy questions in a B2B support context.',
+      name: config.collection,
+      description: config.collectionDescription,
       vectorizers: vectors.text2VecOllama({
-        apiEndpoint: ollamaEndpoint,
-        model: 'nomic-embed-text',
+        apiEndpoint: config.models.llmEndpoint,
+        model: config.models.embed,
       }),
       generative: generative.ollama({
-        apiEndpoint: ollamaEndpoint,
-        model: 'llama3.2',
+        apiEndpoint: config.models.llmEndpoint,
+        model: config.models.llm,
       }),
       properties: [
         { name: 'docTitle', dataType: 'text' },
@@ -53,7 +52,7 @@ async function populateWeaviate(
 }
 
 async function handleDocs(client: WeaviateClient, readOnly: boolean = false) {
-  const kbCollection = client.collections.get('KnowledgeBase')
+  const kbCollection = client.collections.get(config.collection)
 
   if (readOnly === false) {
     const reader = new SimpleDirectoryReader()

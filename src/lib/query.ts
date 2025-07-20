@@ -1,15 +1,10 @@
 import weaviate, { WeaviateClient } from 'weaviate-client'
 import { Ollama, OllamaEmbedding } from '@llamaindex/ollama'
-import { systemPrompt } from '@/lib'
+import { systemPrompt, config } from '@/lib'
 import { QueryTrace } from '@/types/'
 
-const models = {
-  embed: 'nomic-embed-text',
-  llm: 'llama3.2',
-}
-
-const embedModel = new OllamaEmbedding({ model: models.embed })
-const llm = new Ollama({ model: models.llm })
+const embedModel = new OllamaEmbedding({ model: config.models.embed })
+const llm = new Ollama({ model: config.models.llm })
 
 const client: WeaviateClient = await weaviate.connectToLocal()
 
@@ -26,7 +21,7 @@ export async function query({ queryText }: { queryText: string }) {
       throw new Error('Failed to generate query embedding')
     }
 
-    const kbCollection = client.collections.get('KnowledgeBase')
+    const kbCollection = client.collections.get(config.collection)
 
     console.log('Performing semantic vector search...')
     const result = await kbCollection.query.nearVector(queryEmbedding, {
@@ -69,7 +64,7 @@ export async function query({ queryText }: { queryText: string }) {
     const response = await llm.complete({ prompt })
 
     queryTrace.llmResponse = {
-      model: models.llm,
+      model: config.models.llm,
       output: response.text,
     }
 
