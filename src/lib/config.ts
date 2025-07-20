@@ -3,7 +3,7 @@ export const config = {
   collectionDescription:
     'A dataset for answering product and policy questions in a B2B support context.',
   models: {
-    embed: 'nomic-embed-text',
+    embed: 'qllama/bge-small-en-v1.5',
     llm: 'llama3.2',
     llmEndpoint: 'http://host.docker.internal:11434',
   },
