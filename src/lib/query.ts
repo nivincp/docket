@@ -5,9 +5,15 @@ import { QueryTrace } from '@/types/'
 
 export async function query({ queryText }: { queryText: string }) {
   try {
-    const embedModel = new OllamaEmbedding({ model: config.models.embed })
-    const llm = new Ollama({ model: config.models.llm })
-    const client: WeaviateClient = await weaviate.connectToLocal()
+    const embedModel = new OllamaEmbedding({
+      model: config.models.embed,
+      config: { host: config.models.llmEndpoint },
+    })
+    const llm = new Ollama({
+      model: config.models.llm,
+      config: { host: config.models.llmEndpoint },
+    })
+    const client: WeaviateClient = await weaviate.connectToLocal({ host: config.weaviate.host })
 
     const queryTrace: QueryTrace = { query: queryText }
 

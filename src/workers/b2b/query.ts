@@ -7,7 +7,7 @@ const {
 } = questions
 
 async function main() {
-  const { question, expectedAnswerContains } = feesAndEdgeCases[0]
+  const { question, expectedAnswerContains } = paraphrased[0]
 
   const queryTrace = await query({ queryText: `${provider} - ${question}` })
 

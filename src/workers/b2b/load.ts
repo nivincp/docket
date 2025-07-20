@@ -10,7 +10,9 @@ Settings.chunkOverlap = 500
 
 async function main() {
   // Initialize Weaviate client
-  const client: WeaviateClient = await weaviate.connectToLocal()
+  const client: WeaviateClient = await weaviate.connectToLocal({
+    host: config.weaviate.host,
+  })
   await populateWeaviate(client, true)
 
   // Close client connection
