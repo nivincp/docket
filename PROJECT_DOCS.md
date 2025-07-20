@@ -76,6 +76,11 @@ This project is a prototype for a next-generation B2B support platform. It lever
 - Installs dependencies and copies source code.
 - Exposes port 3000 and starts the dev server.
 
+### 10. Test Files
+
+- **`src/workers/b2b/load.test.ts`**: Unit tests for document loading functionality, Weaviate collection management, and data processing.
+- **`src/lib/query.test.ts`**: Tests for the RAG query pipeline, embedding generation, vector search, result filtering, and LLM integration.
+
 ## Data Flow
 
 1. **Startup**: Weaviate and Hono containers start. Hono waits for Weaviate, loads documents, and starts the API server.
@@ -106,15 +111,61 @@ This project is a prototype for a next-generation B2B support platform. It lever
    - `/ask` for question answering
 
 4. Run evaluation (optional):
+
    ```sh
    yarn b2b:evaluate
    ```
+
    This runs the correctness evaluator against test questions for nescafe-delivery-policy.pdf to measure RAG pipeline performance.
+
+5. Run unit tests:
+   ```sh
+   yarn test
+   ```
+   This runs unit tests for the data loading and query functionality.
+
+## Testing
+
+Provide coverage of core functionality:
+
+### Data Loading Tests (`src/workers/b2b/load.test.ts`)
+
+- covers the document loading and Weaviate collection management
+- Tests Weaviate client initialization with correct configuration
+- Validates collection creation, deletion, and conditional logic
+- Verifies document processing, chunking, and insertion
+- Tests vectorizer and generative model configuration
+- Covers error handling and edge cases
+
+### Query Pipeline Tests (`src/lib/query.test.ts`)
+
+- Tests Weaviate client initialization for both Docker and local environments
+- Validates embedding model and LLM initialization
+- Tests vector search with proper filtering by distance and content quality
+- Verifies citation generation and metadata handling
+- Tests prompt construction and LLM integration
+- Covers error scenarios and resource cleanup
+- Tests edge cases like missing metadata and data type conversions
+
+### Test Features
+
+- External dependencies (Weaviate, Ollama, LlamaIndex) are mocked
+- Tests both Docker and local development scenarios
+- Proper filtering and validation of search results
+- Tests failure modes and error handling paths
+
+Run tests with:
+
+```sh
+yarn test
+yarn test load.test.ts
+yarn test query.test.ts
+```
 
 ## Extending & Improving
 
 - Add support for document uploads and updates.
-- Implement evaluation scripts and test coverage.
+- Add more evaluation scripts and test coverage.
 - Improve prompt engineering and result filtering.
 - Scale to larger datasets and multi-user scenarios.
 - Add streaming support for real-time answer generation and improved user experience.
