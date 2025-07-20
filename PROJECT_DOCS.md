@@ -18,12 +18,18 @@ This project is a prototype for a next-generation B2B support platform. It lever
 ```mermaid
 graph TD
   A[User] -->|Asks question| B[Hono API /ask]
+  A -->|Runs CLI| B2[b2b:query CLI]
+
   B --> C[query.ts]
+  B2 --> C
+
   C --> D[Weaviate Vector DB]
   D -->|Returns relevant chunks| E[Prompt Builder]
   E --> F[Ollama: LLM via LlamaIndex]
   F -->|Final Answer + Citations| G[Hono API /ask]
+  F -->|Final Answer + Citations| G2[CLI Output]
   G --> A
+  G2 --> A
 
   subgraph Local Services
     D
