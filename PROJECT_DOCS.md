@@ -111,6 +111,7 @@ This project is a prototype for a next-generation B2B support platform. It lever
 - Implement evaluation scripts and test coverage.
 - Improve prompt engineering and result filtering.
 - Scale to larger datasets and multi-user scenarios.
+- Add streaming support for real-time answer generation and improved user experience.
 
 ## References
 
