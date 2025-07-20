@@ -1,180 +1,205 @@
-## Scope
+# Docket B2B Support Platform – Project Documentation
 
-# Take-Home Challenge: Problem Statement
+## Overview
 
-## Background
+This project is a prototype for a next-generation B2B support platform. It leverages Generative AI and semantic search to answer product and policy questions for support agents, providing clear citations to source documents. The stack uses Node.js, TypeScript, Hono (web server), Weaviate (vector DB), Ollama (LLM/embedding), and LlamaIndex for orchestration.
 
-You’ve joined an early-stage team working on a next-generation **B2B support platform**. The vision:  
-Leverage **Generative AI** to deliver faster, more accurate, and context-aware answers to customer and internal support questions.
+## Architecture
 
-The market is **crowded**, expectations are **high**, and you need to move **fast** while laying the right foundations for growth.
+- **Hono API Server** (`src/index.ts`): Serves REST endpoints for question answering and OpenAPI documentation.
+- **Weaviate** (Docker service): Stores vectorized document chunks for semantic search.
+- **Ollama** (external, on host): Provides LLM and embedding models via API.
+- **LlamaIndex**: Used for document reading, chunking, and embedding orchestration.
+- **Data Loader** (`src/workers/b2b/load.ts`): Reads documents, generates embeddings, and populates Weaviate.
+- **Query Pipeline** (`src/lib/query.ts`): Embeds user queries, performs semantic search, constructs prompts, and calls LLM for answers.
 
-## Your Challenge
+## Flow
 
-Imagine it’s your **first week**. You’ve been asked to demonstrate—by shipping a **working prototype**—how you would approach delivering a **core question-answering experience** that sets the groundwork for a **reliable**, **scalable**, and **continually improving product**.
+```mermaid
+graph TD
+  A[User] -->|Asks question| B[Hono API /ask]
+  A -->|Runs CLI| B2[b2b:query CLI]
 
-### Primary Goal
+  B --> C[query.ts]
+  B2 --> C
 
-Deliver a **minimum viable solution (MVP)** that allows a **user to ask a question** and **receive a helpful, trustworthy answer**, with **clarity on where the answer came from**.
+  C --> D[Weaviate Vector DB]
+  D -->|Returns relevant chunks| E[Prompt Builder]
+  E --> F[Ollama: LLM via LlamaIndex]
+  F -->|Final Answer + Citations| G[Hono API /ask]
+  F -->|Final Answer + Citations| G2[CLI Output]
+  G --> A
+  G2 --> A
 
-## Considerations & Constraints
+  subgraph Local Services
+    D
+    F
+  end
 
-- You have **~8 hours** of focused work.
-- Access to a small “seed” set of reference documents (e.g., FAQs, manuals, policies).
-- You must demo to **non-technical stakeholders**, not just engineers.
-- No requirements doc or spec — you must:
-  - Clarify ambiguities and document key assumptions.
-  - Break down the problem into actionable parts.
-  - Balance **speed** and **foresight**.
-  - Demonstrate how you would **measure**, **iterate**, and **collaborate**.
+  subgraph Data Pipeline
+    H[load.ts]
+    H --> D
+  end
+```
 
-## Deliverables
+## Key Files & Their Roles
 
-1. **Working MVP**
-   - Show a working flow where users can ask a question and get an answer.
-   - Be explicit about what’s **real vs stubbed**, and **why**.
+### 1. `src/index.ts`
 
-2. **Approach Summary**
-   - How you understood and broke down the problem.
-   - Key choices and your rationale.
-   - How you measured/validated the result.
-   - How you’d iterate and improve it.
+- Sets up the Hono server and OpenAPI documentation.
+- Defines the `/` and `/api` endpoints.
+- Registers the main question-answering route (`askRoute`).
+- Starts the server on port 3000.
 
-3. **High-Level Architecture & Roadmap**
-   - What needs to change to **scale**, **build trust**, **control costs**, and support **continuous improvement**?
-   - Identify **key risks** and how you’d mitigate them (both product & system level).
-   - How would you **collaborate** with teammates (junior devs, PMs, designers) to go faster?
+### 2. `src/lib/config.ts`
 
-4. **Short Reflection**
-   - If given **another week**, what would you prioritize next?
-   - How would you measure **success with real users**?
+- Centralizes configuration for model names, endpoints, and Weaviate host.
+- Uses `host.docker.internal` for Ollama (when running in Docker).
+- Sets collection name and description for Weaviate.
 
-## Tools & Workflow
+### 3. `src/lib/query.ts`
 
-You can use **any tools**, **languages**, or **workflows** you prefer.  
-Focus on:
+- Main query function for answering user questions.
+- Steps:
+  1. Embeds the query using OllamaEmbedding.
+  2. Connects to Weaviate using service name (`weaviate:8080`).
+  3. Performs semantic vector search for relevant document chunks.
+  4. Filters results by distance and content quality.
+  5. Constructs a prompt with context and user query.
+  6. Calls Ollama LLM for answer generation.
+  7. Returns answer and citations.
 
-- Clarity of thought
-- Sound structure
-- Practical decisions
+### 4. `src/workers/b2b/load.ts`
 
-**Polish is less important** than being thoughtful and resourceful.
+- Loads and chunks documents from the `data/` directory.
+- Generates embeddings for each chunk using Ollama.
+- Inserts chunks into Weaviate with metadata (title, page number, etc.).
+- Creates Weaviate collection/schema if not present.
+- Can overwrite existing collection if needed.
 
-## What We’re Looking For
+### 5. `src/routes/ask.ts`
 
-- Can you **turn ambiguity** into **valuable execution**?
-- Do you show **ownership**, **product thinking**, and **technical judgment**?
-- Are you thoughtful about **risks**, **validation**, and **iteration**?
-- Can you **communicate** your approach clearly and concisely?
-- Do you **enable others** in a high-agency, high-ambiguity environment?
+- Defines the API route and handler for question answering.
+- Calls the query pipeline and returns the result.
 
-## Need Help?
+### 6. `package.json`
 
-If you need a sample document set or have any questions, just ask!  
-Part of the challenge is **framing the right questions** and making **smart assumptions**.
+- Defines scripts for loading data (`b2b:load`), querying (`b2b:query`), and running the dev server (`dev`).
+- Lists all dependencies and devDependencies.
 
-# Clarifying Questions & Answers
+### 7. `docker-compose.yml`
 
-## 1. Who’s the main user here?
+- Defines two services: `weaviate` (vector DB) and `hono` (API server).
+- Sets up networking so `hono` can reach `weaviate` and Ollama (on host).
+- Uses an entrypoint script to wait for Weaviate, run the data loader, and then start the dev server for `hono`.
+- Mounts code for live development.
 
-**Primary user:** Support agents at B2B companies  
-**Context:**  
-They use this tool to quickly answer customer queries via **chat**, **email**, or **phone**.
+### 8. `makefile`
 
-In later stages, it may expand to end customers, but for now, **design for internal support agent workflows**.
+- Provides commands for building, starting, and stopping the stack.
+- Can be extended to run data loading before dev server startup.
 
-## 2. What kind of questions should it handle?
+### 9. `Dockerfile`
 
-Focus on:
+- Builds the `hono` service image.
+- Installs dependencies and copies source code.
+- Exposes port 3000 and starts the dev server.
 
-- FAQs
-- Product “how-tos”
-- Policy-related queries  
-  (from internal docs, knowledge bases, SOPs)
+### 10. Test Files
 
-Not for:
+- **`src/workers/b2b/load.test.ts`**: Unit tests for document loading functionality, Weaviate collection management, and data processing.
+- **`src/lib/query.test.ts`**: Tests for the RAG query pipeline, embedding generation, vector search, result filtering, and LLM integration.
 
-- Long-form research
-- Troubleshooting logs
-- Code-level debugging (yet)
+## Data Flow
 
-## 3. How accurate do answers need to be?
+1. **Startup**: Weaviate and Hono containers start. Hono waits for Weaviate, loads documents, and starts the API server.
+2. **Data Loading**: `load.ts` reads files from `data/`, chunks and embeds them, and inserts them into Weaviate.
+3. **Querying**: User sends a question to the API. The query pipeline embeds the question, searches Weaviate, builds a prompt, and gets an answer from Ollama.
+4. **Response**: API returns the answer and citations to the user.
 
-Target: "**Mostly right** with **clear sources**"
+## Environment & Networking
 
-For MVP:
+- **Ollama**: Runs on the Mac host, accessed from Docker via `host.docker.internal:11434`.
+- **Weaviate**: Accessed from Hono via service name `weaviate:8080`.
+- **Data**: Static files in `src/data/` (PDF, Markdown, etc.).
 
-- Occasional misses are okay **as long as sources/citations are shown**
-- Avoid hallucinated or made-up information
-- If no relevant info, **say so clearly**
+## How to Run
 
-## 4. What makes an answer feel trustworthy?
+1. Install dependencies:
+   ```sh
+   yarn install
+   ```
+2. Start the stack:
+   ```sh
+   make build
+   make up
+   ```
+3. Access the API:
+   - [http://localhost:3000](http://localhost:3000)
+   - `/docs` for OpenAPI spec
+   - `/ask` for question answering
 
-- Clear **citations**: doc titles + section headers or line numbers
-- Optional but helpful:
-  - Confidence scores
-  - Short rationale (`e.g., found in doc X, section Y`)
-- Bonus:
-  - Highlight matched text
-  - Include relevant snippets
+4. Run evaluation (optional):
 
-## 5. Any sample docs I could use to test with?
+   ```sh
+   yarn b2b:evaluate
+   ```
 
-Yes
+   This runs the correctness evaluator against test questions for nescafe-delivery-policy.pdf to measure RAG pipeline performance.
 
-Use **public company** support content in:
+5. Run unit tests:
+   ```sh
+   yarn test
+   ```
+   This runs unit tests for the data loading and query functionality.
 
-- Markdown
-- PDF
-- HTML
+## Testing
 
-Examples: Slack, AWS, Notion, Stripe product FAQs
+Provide coverage of core functionality:
 
-> No need to spend time on ETL — structure can be simple.
+### Data Loading Tests (`src/workers/b2b/load.test.ts`)
 
-## 6. Are docs static for now, or should I think about user uploads?
+- covers the document loading and Weaviate collection management
+- Tests Weaviate client initialization with correct configuration
+- Validates collection creation, deletion, and conditional logic
+- Verifies document processing, chunking, and insertion
+- Tests vectorizer and generative model configuration
+- Covers error handling and edge cases
 
-**Static for now**  
-Assume a **small set (10–50 docs)** loaded at startup or from disk.
+### Query Pipeline Tests (`src/lib/query.test.ts`)
 
-Bonus:  
-Briefly outline how you’d support **uploads/updates** in the future.
+- Tests Weaviate client initialization for both Docker and local environments
+- Validates embedding model and LLM initialization
+- Tests vector search with proper filtering by distance and content quality
+- Verifies citation generation and metadata handling
+- Tests prompt construction and LLM integration
+- Covers error scenarios and resource cleanup
+- Tests edge cases like missing metadata and data type conversions
 
-## 7. Can I assume everything’s in English?
+### Test Features
 
-Yes
-Only **English** is in scope for this take-home.
+- External dependencies (Weaviate, Ollama, LlamaIndex) are mocked
+- Tests both Docker and local development scenarios
+- Proper filtering and validation of search results
+- Tests failure modes and error handling paths
 
-## 8. Any limits on using APIs like OpenAI or Pinecone?
+Run tests with:
 
-No hard limits
-You can use:
+```sh
+yarn test
+yarn test load.test.ts
+yarn test query.test.ts
+```
 
-- OpenAI
-- Cohere
-- Pinecone
-- Weaviate
-- Any cloud/vector API
+## Extending & Improving
 
-If needed:
+- Add support for document uploads and updates.
+- Add more evaluation scripts and test coverage.
+- Improve prompt engineering and result filtering.
+- Scale to larger datasets and multi-user scenarios.
+- Add streaming support for real-time answer generation and improved user experience.
 
-- Mock paid APIs
-- Explain your setup
+## References
 
-You’re not expected to deploy live or incur cost, but the prototype should **demonstrate scalability**.
-
-## 9. What would a successful demo look like?
-
-A simple curl or UI request that:
-
-- Accepts a **product or policy question**
-- Returns a **relevant answer**
-- Includes a **citation to the original doc/section**
-
-The answer should be **"good enough to help a human agent"**, not perfect.
-
-Bonus:
-
-- Evaluation scripts
-- A `README.md`
-- Partial test coverage
+- See `README.md` for challenge context and clarifying questions.
+- All code is in `src/` except for dependencies and data files.
