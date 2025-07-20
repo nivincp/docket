@@ -1,4 +1,4 @@
-# Docket B2B Support Platform – Project Documentation
+# B2B Support Platform
 
 ## Overview
 
@@ -122,6 +122,46 @@ graph TD
 - **Ollama**: Runs on the Mac host, accessed from Docker via `host.docker.internal:11434`.
 - **Weaviate**: Accessed from Hono via service name `weaviate:8080`.
 - **Data**: Static files in `src/data/` (PDF, Markdown, etc.).
+
+## Requirements
+
+Before running the project, ensure you have the following installed:
+
+### 1. Docker & Docker Compose
+
+- **Docker Desktop** (macOS/Windows) or Docker Engine (Linux)
+- **Docker Compose** (included with Docker Desktop)
+- Used to run Weaviate vector database and the Hono API server
+
+### 2. Ollama
+
+- **Ollama** must be installed and running on your host machine
+- Download from: [https://ollama.ai](https://ollama.ai)
+- The application will connect to Ollama via `host.docker.internal:11434` from Docker containers
+
+### 3. Required Models
+
+Pull the following models in Ollama before starting:
+
+```sh
+# Embedding model for vector search
+ollama pull qllama/bge-small-en-v1.5
+
+# Language model for answer generation
+ollama pull llama3.2
+```
+
+You can verify models are installed with:
+
+```sh
+ollama list
+```
+
+### 4. Node.js & Yarn
+
+- **Node.js** (v22 or higher)
+- **Yarn** package manager
+- Used for dependency management and running scripts
 
 ## How to Run
 
