@@ -9,7 +9,7 @@ const {
 async function main() {
   const { question, expectedAnswerContains } = paraphrased[0]
 
-  const queryTrace = await query({ queryText: `${provider} - ${question}` })
+  const queryTrace = await query({ queryText: `${provider} - ${question}`, dockerHost: true })
 
   console.dir(queryTrace, { depth: null })
   console.log('Expected to find:', expectedAnswerContains)

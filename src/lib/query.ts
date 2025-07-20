@@ -3,7 +3,13 @@ import { Ollama, OllamaEmbedding } from '@llamaindex/ollama'
 import { systemPrompt, config } from '@/lib'
 import { QueryTrace } from '@/types/'
 
-export async function query({ queryText }: { queryText: string }) {
+export async function query({
+  queryText,
+  dockerHost,
+}: {
+  queryText: string
+  dockerHost?: boolean
+}) {
   try {
     const embedModel = new OllamaEmbedding({
       model: config.models.embed,
@@ -13,7 +19,9 @@ export async function query({ queryText }: { queryText: string }) {
       model: config.models.llm,
       config: { host: config.models.llmEndpoint },
     })
-    const client: WeaviateClient = await weaviate.connectToLocal({ host: config.weaviate.host })
+    const client: WeaviateClient = await weaviate.connectToLocal({
+      host: dockerHost ? config.weaviate.dockerHost : config.weaviate.host,
+    })
 
     const queryTrace: QueryTrace = { query: queryText }
 

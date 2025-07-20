@@ -5,9 +5,10 @@ export const config = {
   models: {
     embed: 'qllama/bge-small-en-v1.5',
     llm: 'llama3.2',
-    llmEndpoint: process.env.OLLAMA_HOST,
+    llmEndpoint: process.env.OLLAMA_HOST || 'http://localhost:11434',
   },
   weaviate: {
     host: 'weaviate',
+    dockerHost: 'localhost',
   },
 }

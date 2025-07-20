@@ -43,11 +43,13 @@ const llMResponseSchema = z.object({
   output: z.string().optional(),
 })
 
-const answerSchema = z.object({
-  query: z.string(),
-  citations: z.array(citationSchema).optional(),
-  llmResponse: llMResponseSchema.optional(),
-})
+const answerSchema = z
+  .object({
+    query: z.string(),
+    citations: z.array(citationSchema).optional(),
+    llmResponse: llMResponseSchema.optional(),
+  })
+  .openapi('QueryResponse')
 
 export const askRoute = createRoute({
   method: 'post',
