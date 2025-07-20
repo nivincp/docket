@@ -102,8 +102,14 @@ This project is a prototype for a next-generation B2B support platform. It lever
    ```
 3. Access the API:
    - [http://localhost:3000](http://localhost:3000)
-   - `/api` for OpenAPI spec
+   - `/docs` for OpenAPI spec
    - `/ask` for question answering
+
+4. Run evaluation (optional):
+   ```sh
+   yarn b2b:evaluate
+   ```
+   This runs the correctness evaluator against test questions for nescafe-delivery-policy.pdf to measure RAG pipeline performance.
 
 ## Extending & Improving
 
