@@ -1,59 +1,82 @@
+import { query } from '@/lib'
 import { z } from '@hono/zod-openapi'
 import { createRoute } from '@hono/zod-openapi'
-import type { OpenAPIHono, RouteConfig, RouteHandler } from "@hono/zod-openapi";
+import type { OpenAPIHono, RouteConfig, RouteHandler } from '@hono/zod-openapi'
+import { questions } from '@/mocks'
 
-export type AppOpenAPI = OpenAPIHono;
-export type AppRouteHandler<R extends RouteConfig> = RouteHandler<R>;
+export type AppOpenAPI = OpenAPIHono
+export type AppRouteHandler<R extends RouteConfig> = RouteHandler<R>
 
-const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
+const {
+  provider,
+  types: { basicFactRetrieval, paraphrased, feesAndEdgeCases, ambiguousOrIncomplete },
+} = questions
 
-const AskSchema = z.object({
-    question: z.string().openapi({ example: "What is your name?" }),
+const askSchema = z.object({
+  provider: z
+    .enum([
+      'cognitive',
+      'microsoft',
+      'fluentpro',
+      'nescafe',
+      'fsas',
+      'onesource',
+      'gigamon',
+      'teradata',
+      'juniper',
+    ])
+    .openapi({ example: 'nescafe' }),
+  question: z.string().openapi({ example: feesAndEdgeCases[0].question }),
 })
 
-const AnswerSchema = z.object({
-    answer: z.string().openapi({ example: "I am Llama 3.2" }),
-}).openapi("Answer")
+const citationSchema = z.object({
+  distance: z.number().optional(),
+  source: z.object({
+    document: z.string(),
+    pageNumber: z.number(),
+  }),
+  excerpt: z.string(),
+})
 
+const llMResponseSchema = z.object({
+  model: z.string(),
+  output: z.string().optional(),
+})
+
+const answerSchema = z.object({
+  query: z.string(),
+  citations: z.array(citationSchema).optional(),
+  llmResponse: llMResponseSchema.optional(),
+})
 
 export const askRoute = createRoute({
-    method: 'post',
-    path: '/ask',
-    request: {
-        body: {
-            content: {
-                'application/json': {
-                    schema: AskSchema,
-                },
-            },
+  method: 'post',
+  path: '/ask',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: askSchema,
         },
+      },
     },
-    responses: {
-        200: {
-            description: 'The answer to the question',
-            content: {
-                'application/json': {
-                    schema: AnswerSchema,
-                },
-            },
+  },
+  responses: {
+    200: {
+      description: 'The answer to the question',
+      content: {
+        'application/json': {
+          schema: answerSchema,
         },
+      },
     },
+  },
 })
 
 export const askHandler: AppRouteHandler<typeof askRoute> = async (c) => {
-    const { question } = await c.req.valid('json')
+  const { provider, question } = await c.req.valid('json')
+  const queryText = `${provider} - ${question}`
 
-
-    const res = await fetch(`${OLLAMA_URL}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            model: "llama3.2",
-            prompt: question,
-            stream: false,
-        }),
-    });
-
-    const result = await res.json();
-    return c.json({ answer: result.response });
+  const res = await query({ queryText })
+  return c.json(res)
 }
