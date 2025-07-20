@@ -1,6 +1,9 @@
 {
   "name": "docket",
   "type": "module",
+  "license": "MIT",
+  "version": "0.1.0",
+  "description": "A knowledge base management system with Hono and Weaviate",
   "scripts": {
     "b2b:load": "tsx src/workers/b2b/load.ts",
     "b2b:query": "tsx src/workers/b2b/query.ts",
