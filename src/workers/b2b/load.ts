@@ -12,7 +12,7 @@ const ollamaEndpoint = 'http://host.docker.internal:11434'
 async function main() {
   // Initialize Weaviate client
   const client: WeaviateClient = await weaviate.connectToLocal()
-  await populateWeaviate(client)
+  await populateWeaviate(client, true)
 
   // Close client connection
   await client.close()
@@ -49,7 +49,7 @@ async function populateWeaviate(
     })
   }
 
-  await handleDocs(client, true)
+  await handleDocs(client)
 }
 
 async function handleDocs(client: WeaviateClient, readOnly: boolean = false) {
