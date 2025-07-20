@@ -3,14 +3,13 @@ import { Ollama, OllamaEmbedding } from '@llamaindex/ollama'
 import { systemPrompt, config } from '@/lib'
 import { QueryTrace } from '@/types/'
 
-const embedModel = new OllamaEmbedding({ model: config.models.embed })
-const llm = new Ollama({ model: config.models.llm })
-
-const client: WeaviateClient = await weaviate.connectToLocal()
-
 export async function query({ queryText }: { queryText: string }) {
   try {
-    let queryTrace: QueryTrace = { query: queryText }
+    const embedModel = new OllamaEmbedding({ model: config.models.embed })
+    const llm = new Ollama({ model: config.models.llm })
+    const client: WeaviateClient = await weaviate.connectToLocal()
+
+    const queryTrace: QueryTrace = { query: queryText }
 
     console.log('Query:', queryText)
     console.log('Generating query embedding...')
