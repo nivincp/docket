@@ -6,7 +6,7 @@
   "description": "A knowledge base management system with Hono and Weaviate",
   "scripts": {
     "b2b:load": "tsx src/workers/b2b/load.ts",
-    "b2b:query": "tsx src/workers/b2b/query.ts",
+    "b2b:query": "NODE_OPTIONS=--no-deprecation tsx src/workers/b2b/query.ts",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",

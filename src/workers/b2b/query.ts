@@ -3,14 +3,16 @@ import { questions } from '@/mocks'
 
 const {
   provider,
-  types: { basic_fact_retrieval, paraphrased, fees_and_edge_cases, ambiguous_or_incomplete },
+  types: { basicFactRetrieval, paraphrased, feesAndEdgeCases, ambiguousOrIncomplete },
 } = questions
 
 async function main() {
-  const queryTrace = await query({
-    queryText: `${provider} - ${basic_fact_retrieval[1].question}`,
-  })
+  const { question, expectedAnswerContains } = basicFactRetrieval[1]
+
+  const queryTrace = await query({ queryText: `${provider} - ${question}` })
+
   console.dir(queryTrace, { depth: null })
+  console.log('Expected to find:', expectedAnswerContains)
 }
 
 void main()
